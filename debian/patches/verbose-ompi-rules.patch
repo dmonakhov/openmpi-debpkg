@@ -1,0 +1,16 @@
+Description: Makefile.ompi-rules: don't set silent building
+Author: Adrian Bunk <bunk@debian.org>
+
+Index: openmpi-4.0.1/Makefile.ompi-rules
+===================================================================
+--- openmpi-4.0.1.orig/Makefile.ompi-rules
++++ openmpi-4.0.1/Makefile.ompi-rules
+@@ -53,7 +53,7 @@ endif
+ # A little verbosity magic; "make" will show the terse output.  "make
+ # V=1" will show the actual commands used (just like the other
+ # Automake-generated compilation/linker rules).
+-V=0
++#V=0
+ 
+ OMPI_V_LN_S = $(ompi__v_LN_S_$V)
+ ompi__v_LN_S_ = $(ompi__v_LN_S_$AM_DEFAULT_VERBOSITY)

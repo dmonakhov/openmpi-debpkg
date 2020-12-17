@@ -1,0 +1,26 @@
+Author: Alastair McKinstry <mckinstry@debian.org>
+Description: Change install libdir to openmpi3
+ This is needed to ensure that libopenmpi2, libopenmpi3 do not collide.
+Last-Updated: 2019-03-09
+Forwarded: no
+
+
+Index: openmpi-4.0.0/configure.ac
+===================================================================
+--- openmpi-4.0.0.orig/configure.ac
++++ openmpi-4.0.0/configure.ac
+@@ -1405,11 +1405,13 @@ esac
+ # easier to deal with the problem of opal, orte, and ompi built from
+ # their own tarballs, with their own PACKAGE variables.
+ opaldatadir='${datadir}/openmpi'
+-opallibdir='${libdir}/openmpi'
++opallibdir='${libdir}/openmpi3'
+ opalincludedir='${includedir}/openmpi'
++pkglibdir='${libdir}/openmpi3'
+ AC_SUBST(opaldatadir)
+ AC_SUBST(opallibdir)
+ AC_SUBST(opalincludedir)
++AC_SUBST(pkglibdir)
+ 
+ OPAL_SET_MCA_PREFIX([OMPI_MCA_])
+ OPAL_SET_MCA_CMD_LINE_ID([mca])

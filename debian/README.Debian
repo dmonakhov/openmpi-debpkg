@@ -1,0 +1,11 @@
+
+Please be aware that as of release 4.0.2-2, Debian now sets the following:
+
+	OMPI_MCA_btl_base_warn_component_unused=0
+
+This is set in /etc/openmpi/openmpi-mca-params.conf and turns off warnings that OpenFabric is configured
+but not used on the system. Many or most users of Debian will not have OpenFabric present on their systems
+and turning this off prevents spurious warnings that were breaking higher-level libraries and
+applications.  
+
+-- Alastair McKinstry <mckinstry@debian.org>, 2019-11-19

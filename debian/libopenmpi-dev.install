@@ -1,0 +1,8 @@
+## Library headers
+usr/lib/*/openmpi/include/*
+## .so symlinks
+usr/lib/*/openmpi/lib/*.so
+## pkg-config .pc files
+usr/lib/*/openmpi/lib/pkgconfig/*.pc
+# mod files for Fortran
+/usr/lib/*/openmpi/lib/*.mod

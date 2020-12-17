@@ -1,0 +1,19 @@
+Description: Turn off warning that openfabric is not available
+ because it breaks some overlying layers/appications in Debian
+Author: Alastair McKinstry <mckinstry@debian.org>
+Last-Updated: 2019-11-19
+Forwarded: no
+
+Index: openmpi-4.0.2/opal/etc/openmpi-mca-params.conf
+===================================================================
+--- openmpi-4.0.2.orig/opal/etc/openmpi-mca-params.conf
++++ openmpi-4.0.2/opal/etc/openmpi-mca-params.conf
+@@ -57,3 +57,7 @@
+ 
+ # See "ompi_info --param all all --level 9" for a full listing of Open
+ # MPI MCA parameters available and their default values.
++
++# Silence this warning on Debian, as many systems don't have openfabric
++# but the warning breaks higher layers or application
++btl_base_warn_component_unused=0
+\ No newline at end of file

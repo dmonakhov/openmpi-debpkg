@@ -1,0 +1,17 @@
+Desciption: Fix underlinking
+  Prevents symbol lookup error: ../openmpi4/mca_mtl_ofi.so:
+  undefined symbol: fi_dupinfo when linked with --as-needed
+Bug-Debian: https://bugs.debian.org/899104
+Author: Graham Inggs <ginggs@debian.org>
+Last-Update: 2018-05-23
+
+Index: openmpi-4.0.1/ompi/mca/mtl/ofi/Makefile.am
+===================================================================
+--- openmpi-4.0.1.orig/ompi/mca/mtl/ofi/Makefile.am
++++ openmpi-4.0.1/ompi/mca/mtl/ofi/Makefile.am
+@@ -1,4 +1,4 @@
+-#
++
+ # Copyright (c) 2013-2015 Intel, Inc. All rights reserved
+ #
+ # Copyright (c) 2014-2019 Cisco Systems, Inc.  All rights reserved

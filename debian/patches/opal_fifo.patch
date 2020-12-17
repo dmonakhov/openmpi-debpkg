@@ -1,0 +1,23 @@
+Description: fix test-suite to build on ppc64el
+ Test suite hangs on ppc64el. This is due to a bug in test/class/opal_fifo.c.
+ thread_test() must end with pthread_exit(NULL), not return NULL.
+Author: Thibaut Paumard <thibaut@debian.org>
+Origin: Vendor
+Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=848218
+Forwarded: no
+Last-Update: 2016-12-15
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+Index: openmpi-4.0.0/test/class/opal_fifo.c
+===================================================================
+--- openmpi-4.0.0.orig/test/class/opal_fifo.c
++++ openmpi-4.0.0/test/class/opal_fifo.c
+@@ -63,7 +63,7 @@ static void *thread_test (void *arg) {
+     printf ("Atomics thread finished. Time: %d s %d us %d nsec/poppush\n", (int) total.tv_sec,
+             (int)total.tv_usec, (int)(timing / 1e-9));
+ 
+-    return NULL;
++    pthread_exit(NULL);
+ }
+ 
+ static void *thread_test_exhaust (void *arg) {

@@ -1,0 +1,73 @@
+Description: Fix problems in manpages
+ In some man page headers, a macro (-*-) is used which makes lintian
+  choke and probably should not be there anyway.
+Author: Alastair McKinstry <mckinstry@debian.org>
+Forwarded: no
+Last-Update: 2018-04-08
+
+Index: openmpi-4.0.0/ompi/mpi/man/man3/MPI_T_enum_get_info.3in
+===================================================================
+--- openmpi-4.0.0.orig/ompi/mpi/man/man3/MPI_T_enum_get_info.3in
++++ openmpi-4.0.0/ompi/mpi/man/man3/MPI_T_enum_get_info.3in
+@@ -32,7 +32,7 @@ Length of the string and/or buffer for n
+ 
+ .SH OUTPUT PARAMETERS
+ .ft R
+-.TP li
++.TP 1i
+ num
+ number of discrete values represented by this enumeration.
+ .TP 1i
+Index: openmpi-4.0.0/ompi/mpi/man/man3/MPI_T_pvar_get_info.3in
+===================================================================
+--- openmpi-4.0.0.orig/ompi/mpi/man/man3/MPI_T_pvar_get_info.3in
++++ openmpi-4.0.0/ompi/mpi/man/man3/MPI_T_pvar_get_info.3in
+@@ -131,7 +131,7 @@ MPI_T_PVAR_CLASS_GENERIC
+ Variable does not fit into any other class. Can by represented by an type supported by the MPI tool
+ information interface (see DATATYPE). Starting value is variable specific.
+ 
+-For more information see MPI-3 \[char 167] 14.3.7.
++For more information see MPI-3 \[char167] 14.3.7.
+ 
+ .SH DATATYPE
+ .ft R
+Index: openmpi-4.0.0/ompi/mpi/man/man3/MPI_Get.3in
+===================================================================
+--- openmpi-4.0.0.orig/ompi/mpi/man/man3/MPI_Get.3in
++++ openmpi-4.0.0/ompi/mpi/man/man3/MPI_Get.3in
+@@ -104,7 +104,7 @@ window object used for communication (ha
+ 
+ .SH OUTPUT PARAMETER
+ .ft R
+-.TP li
++.TP 1i
+ request
+ MPI_Rget: RMA request
+ .TP 1i
+Index: openmpi-4.0.0/ompi/mpi/man/man3/MPI_T_enum_get_item.3in
+===================================================================
+--- openmpi-4.0.0.orig/ompi/mpi/man/man3/MPI_T_enum_get_item.3in
++++ openmpi-4.0.0/ompi/mpi/man/man3/MPI_T_enum_get_item.3in
+@@ -36,7 +36,7 @@ Length of the string and/or buffer for n
+ 
+ .SH OUTPUT PARAMETERS
+ .ft R
+-.TP li
++.TP 1i
+ value
+ Variable value.
+ .TP 1i
+Index: openmpi-4.0.0/orte/mca/sstore/orte_sstore.7in
+===================================================================
+--- openmpi-4.0.0.orig/orte/mca/sstore/orte_sstore.7in
++++ openmpi-4.0.0/orte/mca/sstore/orte_sstore.7in
+@@ -12,8 +12,7 @@
+ .\" **************************
+ .SH NAME
+ .
+-Open RTE MCA File Management (SStore) Framework \- Overview of Open RTE's SStore
+-framework, and selected modules.  #PACKAGE_NAME# #PACKAGE_VERSION#
++ORTE_SSTORE \- Overview of Open RTE's SStore framework, and selected modules
+ .
+ .\" **************************
+ .\"    Description Section

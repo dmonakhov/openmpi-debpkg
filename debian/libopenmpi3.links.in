@@ -1,0 +1,20 @@
+# Compatibility links to /usr/bin
+usr/lib/@TRIPLET@/openmpi/lib/libmca_common_sm.so.40.20.0   usr/lib/@TRIPLET@/libmca_common_sm.so.40.20.0
+usr/lib/@TRIPLET@/openmpi/lib/libmpi_cxx.so.40.20.1         usr/lib/@TRIPLET@/libmpi_cxx.so.40.20.1
+usr/lib/@TRIPLET@/openmpi/lib/libmpi_mpifh.so.40.20.2	usr/lib/@TRIPLET@/libmpi_mpifh.so.40.20.2
+usr/lib/@TRIPLET@/openmpi/lib/libmpi.so.40.20.3            usr/lib/@TRIPLET@/libmpi.so.40.20.3
+usr/lib/@TRIPLET@/openmpi/lib/libmpi_usempif08.so.40.21.0 	usr/lib/@TRIPLET@/libmpi_usempif08.so.40.21.0
+usr/lib/@TRIPLET@/openmpi/lib/libmpi_usempi_ignore_tkr.so.40.20.0	usr/lib/@TRIPLET@/libmpi_usempi_ignore_tkr.so.40.20.0
+usr/lib/@TRIPLET@/openmpi/lib/libompitrace.so.40.20.0	usr/lib/@TRIPLET@/libompitrace.so.40.20.0
+usr/lib/@TRIPLET@/openmpi/lib/libopen-pal.so.40.20.3        usr/lib/@TRIPLET@/libopen-pal.so.40.20.3
+usr/lib/@TRIPLET@/openmpi/lib/libopen-rte.so.40.20.3        usr/lib/@TRIPLET@/libopen-rte.so.40.20.3
+# SONAME symlinks
+usr/lib/@TRIPLET@/libmca_common_sm.so.40.20.0              usr/lib/@TRIPLET@/libmca_common_sm.so.40
+usr/lib/@TRIPLET@/libmpi_cxx.so.40.20.1                    usr/lib/@TRIPLET@/libmpi_cxx.so.40
+usr/lib/@TRIPLET@/libmpi_mpifh.so.40.20.2			usr/lib/@TRIPLET@/libmpi_mpifh.so.40
+usr/lib/@TRIPLET@/libmpi.so.40.20.3                       usr/lib/@TRIPLET@/libmpi.so.40
+usr/lib/@TRIPLET@/libmpi_usempif08.so.40.21.0		usr/lib/@TRIPLET@/libmpi_usempif08.so.40
+usr/lib/@TRIPLET@/libmpi_usempi_ignore_tkr.so.40.20.0   	usr/lib/@TRIPLET@/libmpi_usempi_ignore_tkr.so.40
+usr/lib/@TRIPLET@/libompitrace.so.40.20.0                   usr/lib/@TRIPLET@/libompitrace.so.40
+usr/lib/@TRIPLET@/libopen-pal.so.40.20.3                   usr/lib/@TRIPLET@/libopen-pal.so.40
+usr/lib/@TRIPLET@/libopen-rte.so.40.20.3                   usr/lib/@TRIPLET@/libopen-rte.so.40

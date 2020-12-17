@@ -1,0 +1,8 @@
+manpage_macros
+build_hurd
+libdir.patch
+hppa.patch
+opal_fifo.patch
+verbose-ompi-rules.patch
+fix-underlinking.patch
+no-warning-unused.patch

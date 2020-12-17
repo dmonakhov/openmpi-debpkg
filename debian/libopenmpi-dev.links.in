@@ -1,0 +1,22 @@
+## SONAME symlinks
+# libmpi.so is handled by the mpi-@TRIPLET@ alternative
+usr/lib/@TRIPLET@/libmca_common_monitoring.so.50        usr/lib/@TRIPLET@/libmca_common_monitoring.so
+# usr/lib/@TRIPLET@/libmca_common_ofi.so.40               usr/lib/@TRIPLET@/libmca_common_ofi.so
+usr/lib/@TRIPLET@/libmca_common_sm.so.40		usr/lib/@TRIPLET@/libmca_common_sm.so
+usr/lib/@TRIPLET@/libmpi_cxx.so.40			usr/lib/@TRIPLET@/libmpi_cxx.so
+usr/lib/@TRIPLET@/libmpi_mpifh.so.40			usr/lib/@TRIPLET@/libmpi_mpifh.so
+usr/lib/@TRIPLET@/libmpi_usempif08.so.40		usr/lib/@TRIPLET@/libmpi_usempif08.so
+usr/lib/@TRIPLET@/libmpi_usempi_ignore_tkr.so.40	usr/lib/@TRIPLET@/libmpi_usempi_ignore_tkr.so
+usr/lib/@TRIPLET@/libompitrace.so.40			usr/lib/@TRIPLET@/libompitrace.so
+usr/lib/@TRIPLET@/libopen-pal.so.40			usr/lib/@TRIPLET@/libopen-pal.so
+usr/lib/@TRIPLET@/libopen-rte.so.40			usr/lib/@TRIPLET@/libopen-rte.so
+## Convenience link for header files, see bug #493875
+usr/lib/@TRIPLET@/openmpi/include/		usr/include/@TRIPLET@/openmpi
+# pkg-config
+usr/lib/@TRIPLET@/openmpi/lib/pkgconfig/ompi-fort.pc	usr/lib/@TRIPLET@/pkgconfig/ompi-fort.pc
+usr/lib/@TRIPLET@/openmpi/lib/pkgconfig/orte.pc		usr/lib/@TRIPLET@/pkgconfig/orte.pc
+usr/lib/@TRIPLET@/openmpi/lib/pkgconfig/ompi.pc		usr/lib/@TRIPLET@/pkgconfig/ompi.pc
+usr/lib/@TRIPLET@/openmpi/lib/pkgconfig/ompi-c.pc		usr/lib/@TRIPLET@/pkgconfig/ompi-c.pc
+# opal.pc bug #814515: opal.pc conflicts with libopal-dev
+#usr/lib/@TRIPLET@/openmpi/lib/pkgconfig/opal.pc		usr/lib/@TRIPLET@/pkgconfig/opal.pc
+usr/lib/@TRIPLET@/openmpi/lib/pkgconfig/ompi-cxx.pc	usr/lib/@TRIPLET@/pkgconfig/ompi-cxx.pc
