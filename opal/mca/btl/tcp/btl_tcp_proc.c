@@ -264,9 +264,11 @@ static void mca_btl_tcp_initialise_interface(mca_btl_tcp_interface_t* tcp_interf
 
 static mca_btl_tcp_interface_t** mca_btl_tcp_retrieve_local_interfaces(mca_btl_tcp_proc_data_t *proc_data)
 {
+    const int if_count = opal_ifcount();
     struct sockaddr_storage local_addr;
     char local_if_name[IF_NAMESIZE];
-    char **include, **exclude, **argv;
+    int *include, *exclude;
+    int include_found, exclude_found;
     int idx;
     mca_btl_tcp_interface_t * local_interface;
 
@@ -281,8 +283,20 @@ static mca_btl_tcp_interface_t** mca_btl_tcp_retrieve_local_interfaces(mca_btl_t
         return NULL;
 
     /* Collect up the list of included and excluded interfaces, if any */
-    include = opal_argv_split(mca_btl_tcp_component.tcp_if_include,',');
-    exclude = opal_argv_split(mca_btl_tcp_component.tcp_if_exclude,',');
+    include = (int *) malloc(sizeof(int) * if_count);
+    if (NULL == include) {
+        return NULL;
+    }
+    exclude = (int *) malloc(sizeof(int) * if_count);
+    if (NULL == exclude) {
+        free(include);
+        return NULL;
+    }
+    
+    memset(include, 0,  sizeof(int) * if_count);
+    memset(exclude, 0,  sizeof(int) * if_count);
+    include_found = tcp_if_filter(&mca_btl_tcp_component.tcp_if_include, include, "include", false);
+    exclude_found = tcp_if_filter(&mca_btl_tcp_component.tcp_if_exclude, exclude, "exclude", false);
 
     /*
      * identify all kernel interfaces and the associated addresses of
@@ -292,7 +306,8 @@ static mca_btl_tcp_interface_t** mca_btl_tcp_retrieve_local_interfaces(mca_btl_t
         int kindex;
         uint64_t index;
         bool skip = false;
-
+        int i;
+        
         opal_ifindextoaddr (idx, (struct sockaddr*) &local_addr, sizeof (local_addr));
         opal_ifindextoname (idx, local_if_name, sizeof (local_if_name));
 
@@ -304,33 +319,22 @@ static mca_btl_tcp_interface_t** mca_btl_tcp_retrieve_local_interfaces(mca_btl_t
          * mutually exclusive.  This matches how it works in
          * mca_btl_tcp_component_create_instances() which is the function
          * that exports the interfaces.  */
-        if(NULL != include) {
-            argv = include;
+        if (include_found) {
             skip = true;
-            while(argv && *argv) {
-                /* When comparing included interfaces, we look for exact matches.
-                   That is why we are using strcmp() here. */
-                if (0 == strcmp(*argv, local_if_name)) {
+            for (i = 0; i < include_found; i++) {
+                if (idx == include[i]) {
                     skip = false;
                     break;
                 }
-                argv++;
             }
-        } else if (NULL != exclude) {
+        } else if (exclude_found) {
             /* If we were given a list of excluded interfaces, then check to see if the
              * current one is a member of this set.  If not, drop down and complete
              * processing.  If so, skip it and continue on to the next one. */
-            argv = exclude;
-            while(argv && *argv) {
-                /* When looking for interfaces to exclude, we only look at
-                 * the number of characters equal to what the user provided.
-                 * For example, excluding "lo" excludes "lo", "lo0" and
-                 * anything that starts with "lo" */
-                if(0 == strncmp(*argv, local_if_name, strlen(*argv))) {
-                    skip = true;
+            for (i = 0; i < exclude_found; i++) {
+                if (idx == exclude[i]) {
                     break;
                 }
-                argv++;
             }
         }
         if (true == skip) {
@@ -395,10 +399,10 @@ static mca_btl_tcp_interface_t** mca_btl_tcp_retrieve_local_interfaces(mca_btl_t
     }
 cleanup:
     if (NULL != include) {
-        opal_argv_free(include);
+        free(include);
     }
     if (NULL != exclude) {
-        opal_argv_free(exclude);
+        free(exclude);
     }
 
     return proc_data->local_interfaces;

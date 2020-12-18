@@ -488,10 +488,12 @@ static int mca_btl_tcp_component_close(void)
  *  Create a btl instance and add to modules list.
  */
 
-static int mca_btl_tcp_create(int if_kindex, const char* if_name)
+static int mca_btl_tcp_create(int if_index)
 {
     struct mca_btl_tcp_module_t* btl;
+    char if_name[IF_NAMESIZE];
     char param[256];
+    struct sockaddr_storage addr;
     int i;
 
     for( i = 0; i < (int)mca_btl_tcp_component.tcp_num_links; i++ ) {
@@ -504,16 +506,15 @@ static int mca_btl_tcp_create(int if_kindex, const char* if_name)
         mca_btl_tcp_component.tcp_btls[mca_btl_tcp_component.tcp_num_btls++] = btl;
 
         /* initialize the btl */
-        btl->tcp_ifkindex = (uint16_t) if_kindex;
+        btl->tcp_ifkindex = (uint16_t) opal_ifindextokindex(if_index);
+        btl->tcp_ifindex = if_index;
 #if MCA_BTL_TCP_STATISTICS
         btl->tcp_bytes_recv = 0;
         btl->tcp_bytes_sent = 0;
         btl->tcp_send_handler = 0;
 #endif
-
-       struct sockaddr_storage addr;
-       opal_ifkindextoaddr(if_kindex, (struct sockaddr*) &addr,
-                                          sizeof (struct sockaddr_storage));
+        opal_ifindextoname(if_index, if_name, sizeof(if_name));
+        opal_ifindextoaddr(if_index, (struct sockaddr*) &addr, sizeof (struct sockaddr_storage));
 #if OPAL_ENABLE_IPV6
         if (addr.ss_family == AF_INET6) {
             btl->tcp_ifaddr_6 =  addr;
@@ -572,12 +573,12 @@ static int mca_btl_tcp_create(int if_kindex, const char* if_name)
 
 /*
  * Go through a list of argv; if there are any subnet specifications
- * (a.b.c.d/e), resolve them to an interface name (Currently only
- * supporting IPv4).  If unresolvable, warn and remove.
+ * (addr/pre), resolve them to an interface index.
+ * If unresolvable, warn and remove.
  */
-static char **split_and_resolve(char **orig_str, char *name, bool reqd)
+int tcp_if_filter(char **orig_str, int *ifindexes, char *name, bool reqd)
 {
-    int i, ret, save, if_index;
+    int i, ret, if_index, found = 0;
     char **argv, *str, *tmp;
     char if_name[IF_NAMESIZE];
     struct sockaddr_storage argv_inaddr, if_inaddr;
@@ -585,17 +586,28 @@ static char **split_and_resolve(char **orig_str, char *name, bool reqd)
 
     /* Sanity check */
     if (NULL == orig_str || NULL == *orig_str) {
-        return NULL;
+        return 0;
     }
 
     argv = opal_argv_split(*orig_str, ',');
     if (NULL == argv) {
-        return NULL;
+        return 0;
     }
-    for (save = i = 0; NULL != argv[i]; ++i) {
+    for (i = 0; NULL != argv[i]; ++i) {
         if (isalpha(argv[i][0])) {
-            argv[save++] = argv[i];
-            continue;
+            if_index = opal_ifnametoindex(argv[i]);
+                if (if_index < 0) {
+                    if (!reqd) {
+                        continue;
+                    }
+                    opal_show_help("help-mpi-btl-tcp.txt", "invalid if_inexclude",
+                                   true, "include", opal_process_info.nodename,
+                                   if_name, "Unknown interface name");
+                    return OPAL_ERR_NOT_FOUND;
+                } else {
+                    ifindexes[found] = if_index;
+                    found++;
+                }
         }
 
         /* Found a subnet notation.  Convert it to an IP
@@ -671,18 +683,12 @@ static char **split_and_resolve(char **orig_str, char *name, bool reqd)
                             "btl: tcp: Found match: %s (%s)",
                             opal_net_get_hostname((struct sockaddr*) &if_inaddr),
                             if_name);
-        argv[save++] = strdup(if_name);
+        ifindexes[found] = if_index;
+        found++;
         free(tmp);
     }
-
-    /* The list may have been compressed if there were invalid
-       entries, so ensure we end it with a NULL entry */
-    argv[save] = NULL;
-    free(*orig_str);
-    *orig_str = opal_argv_join(argv, ',');
-    return argv;
+    return found;
 }
-
 
 /*
  * Create a TCP BTL instance for either:
@@ -694,12 +700,11 @@ static char **split_and_resolve(char **orig_str, char *name, bool reqd)
 static int mca_btl_tcp_component_create_instances(void)
 {
     const int if_count = opal_ifcount();
-    int if_index;
-    int kif_count = 0;
+    int if_index, i;
+    int kif_used = 0 ,kif_count = 0;
+    int found;
     int *kindexes; /* this array is way too large, but never too small */
-    char **include = NULL;
-    char **exclude = NULL;
-    char **argv;
+    int *ifindexes;
     int ret = OPAL_SUCCESS;
 
     if(if_count <= 0) {
@@ -708,6 +713,12 @@ static int mca_btl_tcp_component_create_instances(void)
 
     kindexes = (int *) malloc(sizeof(int) * if_count);
     if (NULL == kindexes) {
+        return OPAL_ERR_OUT_OF_RESOURCE;
+    }
+
+    ifindexes = (int *) malloc(sizeof(int) * if_count);
+    if (NULL == ifindexes ) {
+        free(kindexes);
         return OPAL_ERR_OUT_OF_RESOURCE;
     }
 
@@ -724,6 +735,7 @@ static int mca_btl_tcp_component_create_instances(void)
          */
         for(if_index = opal_ifbegin(); if_index >= 0; if_index = opal_ifnext(if_index)){
             int index = opal_ifindextokindex (if_index);
+
             if (index > 0) {
                 bool want_this_if = true;
 
@@ -752,65 +764,74 @@ static int mca_btl_tcp_component_create_instances(void)
 
     mca_btl_tcp_component.tcp_addr_count = if_count;
 
-    /* if the user specified an interface list - use these exclusively */
-    argv = include = split_and_resolve(&mca_btl_tcp_component.tcp_if_include,
-                                       "include", true);
-    while(argv && *argv) {
-        char* if_name = *argv;
-        int if_index = opal_ifnametokindex(if_name);
-        if(if_index < 0) {
-            opal_show_help("help-mpi-btl-tcp.txt", "invalid if_inexclude",
-                           true, "include", opal_process_info.nodename,
-                           if_name, "Unknown interface name");
-            ret = OPAL_ERR_NOT_FOUND;
-            goto cleanup;
-        }
-        mca_btl_tcp_create(if_index, if_name);
-        argv++;
+    /* Build exclude list */
+    memset(ifindexes, 0,  sizeof(int) * if_count);
+    found = tcp_if_filter(&mca_btl_tcp_component.tcp_if_include, ifindexes, "include", true);
+    if (found < 0) {
+        ret = OPAL_ERR_NOT_FOUND;
+        goto cleanup;
     }
+    
+    for (i = 0; i < found; i++) {
+        int kif_index = opal_ifindextokindex(ifindexes[i]);
+        int j;
 
+        for (j = 0; j < kif_count; j++) {
+            if (kindexes[j] != kif_index)
+                continue;
+            ret = mca_btl_tcp_create(ifindexes[i]);
+            if (ret != OPAL_SUCCESS)
+                continue;
+
+            kindexes[j] = -1;
+            if (++kif_used == kif_count) 
+                /* Success all blt created */
+                goto cleanup;
+        }
+    }
     /* If we made any modules, then the "include" list was non-empty,
        and therefore we're done. */
     if (mca_btl_tcp_component.tcp_num_btls > 0) {
         ret = OPAL_SUCCESS;
         goto cleanup;
     }
+    /* Build exclude list */
+    memset(ifindexes, 0,  sizeof(int) * if_count);
+    found = tcp_if_filter(&mca_btl_tcp_component.tcp_if_exclude, ifindexes, "exclude", false);
+    for (if_index = opal_ifbegin(); if_index >= 0;
+         if_index = opal_ifnext(if_index)) {
 
-    /* if the interface list was not specified by the user, create
-     * a BTL for each interface that was not excluded.
-    */
-    exclude = split_and_resolve(&mca_btl_tcp_component.tcp_if_exclude,
-                                "exclude", false);
-    {
-        int i;
-        for(i = 0; i < kif_count; i++) {
-            /* IF_NAMESIZE is defined in opal/util/if.h */
-            char if_name[IF_NAMESIZE];
-            if_index = kindexes[i];
+        bool skip = false;
+        int kif_index = opal_ifindextokindex(if_index);
+        int j;
 
-            opal_ifkindextoname(if_index, if_name, sizeof(if_name));
-
-            /* check to see if this interface exists in the exclude list */
-            argv = exclude;
-            while(argv && *argv) {
-                if(strncmp(*argv,if_name,strlen(*argv)) == 0)
-                    break;
-                argv++;
+        for (i = 0; i < found; i++) {
+            if (ifindexes[i] == if_index) {
+                skip = true;
+                break;
             }
-            /* if this interface was not found in the excluded list, create a BTL */
-            if(argv == 0 || *argv == 0) {
-                mca_btl_tcp_create(if_index, if_name);
-            }
+        }
+        if (skip)
+            continue;
+
+        for (j = 0; j < kif_count; j++) {
+            if (kindexes[j] != kif_index)
+                continue;
+            ret = mca_btl_tcp_create(if_index);
+            if (ret != OPAL_SUCCESS)
+                continue;
+            kindexes[j] = -1;
+            if (++kif_used == kif_count)
+                /* Success all blt created */
+                goto cleanup;
         }
     }
 
  cleanup:
-    if (NULL != include) {
-        opal_argv_free(include);
+    if (NULL != ifindexes) {
+        free(ifindexes);
     }
-    if (NULL != exclude) {
-        opal_argv_free(exclude);
-    }
+
     if (NULL != kindexes) {
         free(kindexes);
     }
@@ -1154,6 +1175,10 @@ static int mca_btl_tcp_component_exchange(void)
                   */
                  if (opal_ifindextokindex (index) !=
                      mca_btl_tcp_component.tcp_btls[i]->tcp_ifkindex) {
+                     continue;
+                 }
+                 /* FIXME: use address comparison here */
+                 if (index != mca_btl_tcp_component.tcp_btls[i]->tcp_ifindex) {
                      continue;
                  }
 
