@@ -110,6 +110,7 @@ override_dh_auto_configure:
                 --with-libevent=external \
                 --with-pmix=${LIBDIR}/pmix \
 		--disable-silent-rules \
+		--enable-ipv6 \
 		--enable-mpi-cxx \
 		--with-hwloc=/usr  \
 		--with-libltdl \
