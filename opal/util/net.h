@@ -102,6 +102,10 @@ OPAL_DECLSPEC bool opal_net_samenetwork(const struct sockaddr *addr1,
                                         const struct sockaddr *addr2,
                                         uint32_t prefixlen);
 
+OPAL_DECLSPEC bool opal_net_samenetwork2(const struct sockaddr *addr1,
+                                        const struct sockaddr *addr2,
+                                        uint32_t prefixlen);
+
 
 /**
  * Is the given address a public IPv4 address?  Returns false for IPv6

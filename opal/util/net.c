@@ -320,6 +320,67 @@ opal_net_samenetwork(const struct sockaddr *addr1,
     return false;
 }
 
+bool
+opal_net_samenetwork2(const struct sockaddr *addr1,
+                     const struct sockaddr *addr2,
+                     uint32_t plen)
+{
+    uint32_t prefixlen;
+
+    if(addr1->sa_family != addr2->sa_family) {
+        return false; /* address families must be equal */
+    }
+
+    switch (addr1->sa_family) {
+    case AF_INET:
+        {
+            if (0 == plen) {
+                prefixlen = 32;
+            } else {
+                prefixlen = plen;
+            }
+            struct sockaddr_in inaddr1, inaddr2;
+            /* Use temporary variables and memcpy's so that we don't
+               run into bus errors on Solaris/SPARC */
+            memcpy(&inaddr1, addr1, sizeof(inaddr1));
+            memcpy(&inaddr2, addr2, sizeof(inaddr2));
+            uint32_t netmask = opal_net_prefix2netmask (prefixlen);
+
+            if((inaddr1.sin_addr.s_addr & netmask) ==
+               (inaddr2.sin_addr.s_addr & netmask)) {
+                return true;
+            }
+            return false;
+        }
+        break;
+#if OPAL_ENABLE_IPV6
+    case AF_INET6:
+        {
+            struct sockaddr_in6 inaddr1, inaddr2;
+            /* Use temporary variables and memcpy's so that we don't
+               run into bus errors on Solaris/SPARC */
+            memcpy(&inaddr1, addr1, sizeof(inaddr1));
+            memcpy(&inaddr2, addr2, sizeof(inaddr2));
+            struct in6_addr *a6_1 = (struct in6_addr*) &inaddr1.sin6_addr;
+            struct in6_addr *a6_2 = (struct in6_addr*) &inaddr2.sin6_addr;
+
+            if (0 == plen) {
+                prefixlen = 64;
+            } else {
+                prefixlen = plen;
+            }
+	    return !memcmp((void*)a6_1, (void*)a6_2, prefixlen/8);
+        }
+        break;
+#endif
+    default:
+        opal_output(0, "unhandled sa_family %d passed to opal_samenetwork",
+                    addr1->sa_family);
+    }
+
+    return false;
+}
+
 
 /**
  * Returns true if the given address is a public IPv4 address.

@@ -614,10 +614,17 @@ static char **split_and_resolve(char **orig_str, char *name, bool reqd)
         *str = '\0';
         argv_prefix = atoi(str + 1);
 
-        /* Now convert the IPv4 address */
+        /* Now convert IP address */
         ((struct sockaddr*) &argv_inaddr)->sa_family = AF_INET;
         ret = inet_pton(AF_INET, argv[i],
                         &((struct sockaddr_in*) &argv_inaddr)->sin_addr);
+#if OPAL_ENABLE_IPV6
+        if (1 != ret) {
+            ((struct sockaddr*) &argv_inaddr)->sa_family = AF_INET6;
+            ret = inet_pton(AF_INET6, argv[i],
+                            &((struct sockaddr_in6*) &argv_inaddr)->sin6_addr);
+        }
+#endif
         free(argv[i]);
 
         if (1 != ret) {
@@ -639,7 +646,7 @@ static char **split_and_resolve(char **orig_str, char *name, bool reqd)
             opal_ifindextoaddr(if_index,
                                (struct sockaddr*) &if_inaddr,
                                sizeof(if_inaddr));
-            if (opal_net_samenetwork((struct sockaddr*) &argv_inaddr,
+            if (opal_net_samenetwork2((struct sockaddr*) &argv_inaddr,
                                      (struct sockaddr*) &if_inaddr,
                                      argv_prefix)) {
                 break;
