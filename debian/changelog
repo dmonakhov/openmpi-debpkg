@@ -1,3 +1,11 @@
+openmpi (4.0.3-0yandex4) unstable; urgency=medium
+
+   * btl/tcp: implement real address submask support for tcp_if_include/tcp_if_exclude
+   * btl/tcp: add ipv6 address support for include/exclude rules
+   * debian: enable ipv6 config option
+
+ -- Dmitry Monakhov <dmtrmonakhov@yandex-team.ru>  Fri, 18 Dec 2020 03:04:49 +0300
+
 openmpi (4.0.3-0ubuntu1) focal; urgency=medium
 
   * New upstream release (LP: #1870780)
